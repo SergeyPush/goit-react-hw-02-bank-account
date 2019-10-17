@@ -1,4 +1,5 @@
 import React from 'react';
+import T from 'prop-types';
 
 import style from '../styles/Balance.module.css';
 
@@ -16,6 +17,16 @@ const Balance = ({ balance, income, expenses }) => {
       <span className={style.item}>Balance: {balance}$</span>
     </section>
   );
+};
+Balance.defaultProps = {
+  expenses: 0,
+  income: 0,
+};
+
+Balance.propTypes = {
+  balance: T.number.isRequired,
+  income: T.number,
+  expenses: T.number,
 };
 
 export default Balance;

@@ -4,6 +4,11 @@ import T from 'prop-types';
 import style from '../styles/Controls.module.css';
 
 class Controls extends Component {
+  static propTypes = {
+    onDeposit: T.func.isRequired,
+    onWithdraw: T.func.isRequired,
+  };
+
   state = {
     amount: '',
   };

@@ -18,30 +18,34 @@ class Dashboard extends Component {
   notify = message => toast.error(message);
 
   addTransaction = (amount, type) => {
-    const date = Date.now();
+    const date = new Date().toLocaleString('en-GB');
 
     const transaction = {
       id: shortid.generate(),
-      date: new Date().toLocaleDateString('en-US'),
+      date,
       type,
       amount,
     };
 
     this.setState(state => ({
-      transactions: [...state.transactions, transaction],
+      transactions: [transaction, ...state.transactions],
     }));
   };
 
   onDeposit = amount => {
+    if (amount <= 0) {
+      this.notify('Введите сумму для проведения операции!');
+      return;
+    }
     this.setState(state => ({
       balance: state.balance + amount,
       income: state.income + amount,
     }));
-    this.addTransaction(amount, 'Withdrawal');
+    this.addTransaction(amount, 'Deposit');
   };
 
   onWithdraw = amount => {
-    if (amount === 0) {
+    if (amount <= 0) {
       this.notify('Введите сумму для проведения операции!');
       return;
     }
@@ -50,9 +54,11 @@ class Dashboard extends Component {
       return;
     }
     this.setState(state => ({
-      balance: state.balance + -amount,
-      expenses: state.expenses + -amount,
+      balance: state.balance - amount,
+      expenses: state.expenses + amount,
     }));
+
+    this.addTransaction(amount, 'Withdrawal');
   };
 
   render() {
@@ -61,8 +67,14 @@ class Dashboard extends Component {
     return (
       <div>
         <Controls onDeposit={this.onDeposit} onWithdraw={this.onWithdraw} />
-        <Balance balance={balance} income={income} expenses={expenses} />
-        <TransactionHistory transactions={transactions} />
+        {transactions.length > 0 && (
+          <Balance balance={balance} income={income} expenses={expenses} />
+        )}
+
+        {transactions.length > 0 && (
+          <TransactionHistory transactions={transactions} />
+        )}
+
         <ToastContainer autoClose={2000} transition={Slide} />
       </div>
     );

@@ -11,8 +11,6 @@ class Dashboard extends Component {
   state = {
     balance: 0,
     transactions: [],
-    income: 0,
-    expenses: 0,
   };
 
   notify = message => toast.error(message);
@@ -32,6 +30,24 @@ class Dashboard extends Component {
     }));
   };
 
+  calculateFunds = transactions => {
+    const income = transactions.reduce(
+      (sum, transaction) =>
+        transaction.type === 'Deposit' ? sum + transaction.amount : sum,
+      0,
+    );
+    const expenses = transactions.reduce(
+      (sum, transaction) =>
+        transaction.type === 'Withdrawal' ? sum + transaction.amount : sum,
+      0,
+    );
+
+    return {
+      income,
+      expenses,
+    };
+  };
+
   onDeposit = amount => {
     if (amount <= 0) {
       this.notify('Введите сумму для проведения операции!');
@@ -39,7 +55,6 @@ class Dashboard extends Component {
     }
     this.setState(state => ({
       balance: state.balance + amount,
-      income: state.income + amount,
     }));
     this.addTransaction(amount, 'Deposit');
   };
@@ -55,14 +70,14 @@ class Dashboard extends Component {
     }
     this.setState(state => ({
       balance: state.balance - amount,
-      expenses: state.expenses + amount,
     }));
 
     this.addTransaction(amount, 'Withdrawal');
   };
 
   render() {
-    const { transactions, balance, income, expenses } = this.state;
+    const { transactions, balance } = this.state;
+    const { income, expenses } = this.calculateFunds(transactions);
 
     return (
       <div>

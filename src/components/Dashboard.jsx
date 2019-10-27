@@ -13,11 +13,31 @@ class Dashboard extends Component {
     transactions: [],
   };
 
+  componentDidMount() {
+    try {
+      const transactions = localStorage.getItem('transactions');
+      const parsedTransactions = JSON.parse(transactions);
+      const { balance } = this.calculateFunds(parsedTransactions);
+      this.setState({
+        transactions: parsedTransactions,
+        balance,
+      });
+    } catch (error) {
+      // some text to prevent ESlint error
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { transactions } = this.state;
+    if (prevState.transactions.lengt !== transactions.length) {
+      localStorage.setItem('transactions', JSON.stringify(transactions));
+    }
+  }
+
   notify = message => toast.error(message);
 
   addTransaction = (amount, type) => {
     const date = new Date().toLocaleString('en-GB');
-
     const transaction = {
       id: shortid.generate(),
       date,
@@ -31,21 +51,27 @@ class Dashboard extends Component {
   };
 
   calculateFunds = transactions => {
-    const income = transactions.reduce(
-      (sum, transaction) =>
-        transaction.type === 'Deposit' ? sum + transaction.amount : sum,
-      0,
-    );
-    const expenses = transactions.reduce(
-      (sum, transaction) =>
-        transaction.type === 'Withdrawal' ? sum + transaction.amount : sum,
-      0,
-    );
+    return transactions.reduce(
+      (acc, transaction) => {
+        const income =
+          transaction.type === 'Deposit'
+            ? acc.income + transaction.amount
+            : acc.income;
+        const expenses =
+          transaction.type === 'Withdrawal'
+            ? acc.expenses + transaction.amount
+            : acc.expenses;
+        const balance = income - expenses;
 
-    return {
-      income,
-      expenses,
-    };
+        return {
+          ...acc,
+          income,
+          expenses,
+          balance,
+        };
+      },
+      { income: 0, expenses: 0, balance: 0 },
+    );
   };
 
   onDeposit = amount => {
